@@ -28,6 +28,8 @@ function(new_cpp_executable)
 
     add_executable(${EXEC_NAME} ${EXEC_SOURCES})
 
+    set_target_properties(${EXEC_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
     set_target_properties(${EXEC_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON)
     # We must also actually define which C++ standard to use.
     set_target_properties(${EXEC_NAME} PROPERTIES CXX_STANDARD 17)
@@ -103,6 +105,8 @@ function(new_cpp_library_shared)
     endif()
 
     add_library(${LIB_NAME} SHARED ${LIB_SOURCES})
+
+    set_target_properties(${LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
     set_target_properties(${LIB_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON)
     # We must also actually define which C++ standard to use.

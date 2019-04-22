@@ -15,8 +15,21 @@ endif()
 #   this out, you can comment in when you need it.
 #set(CMAKE_LINK_WHAT_YOU_USE TRUE)
 
+###
+# Check if pie-flags can be used, needed for MSAN. Retrieve any error message.
+###
+include(CheckPIESupported)
+check_pie_supported(OUTPUT_VARIABLE pieCheckResult LANGUAGES CXX)
+#set_property(TARGET foo PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+if(NOT CMAKE_CXX_LINK_PIE_SUPPORTED)
+  message(WARNING "PIE is not supported at link time: ${pieCheckResult}.\n"
+                  "PIE link options will not be passed to linker.")
+endif()
+
+###
 # Check libstdc++ implementations. Some things cannot be found by sanitizers.
 # Has a negative effect on execution time.
+###
 if(LIBSTDCXX_CHECK)
     message("---- Compiling with libstdc++ debug mode.")
     set(MY_CXX_COMPILE_FLAGS ${MY_CXX_COMPILE_FLAGS}
@@ -60,6 +73,19 @@ if(TSAN) # True if CMake called with -DTSAN=1.
             -fsanitize=thread)
 
     set(EXTRA_LINKER_LIBS ${EXTRA_LINKER_LIBS} -fsanitize=thread)
+endif()
+
+if(MSAN) # True if CMake called with -DMSAN=1.
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        message(WARNING "GCC does not support MSAN, at least not in version 8.2, maybe it does now.\n"
+                        "Your compilation will probably fail, if it doesen't please update/ remove this CMake warning!")
+    endif()
+    # Should use -01 or higher.
+    message("---- Compiling with memory sanitizer.")
+    set(MY_CXX_COMPILE_FLAGS ${MY_CXX_COMPILE_FLAGS}
+            -fsanitize=memory -fsanitize-memory-track-origins)
+
+    set(EXTRA_LINKER_LIBS ${EXTRA_LINKER_LIBS} -fsanitize=memory)
 endif()
 
 ###
